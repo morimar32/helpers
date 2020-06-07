@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"helpers/encryption"
+	"github.com/morimar32/helpers/encryption"
 
 	"github.com/joho/godotenv"
 )
