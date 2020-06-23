@@ -30,7 +30,6 @@ func Decrypt(encData string) (string, error) {
 		return "", fmt.Errorf("Error opening private key password file: %w", err)
 	}
 	password := strings.TrimSpace(string(pass))
-	fmt.Println(password)
 	priv, _, err := pkcs12.Decode(key, password)
 	if err != nil {
 		return "", fmt.Errorf("Error decoding private key file: %w", err)
