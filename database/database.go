@@ -29,35 +29,39 @@ func InitConnection(constring string, maxOpen int, maxIdle int, maxLifetime time
 }
 
 // Query Executes the query with the provided query parameters and executes the databind function for each record
-func Query(ctx context.Context, con *sql.DB, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
+func Query(ctx context.Context, con *sql.DB, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) (int64, error) {
 	rows, err := con.QueryContext(ctx, query, queryParams...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer rows.Close()
 
+	var i int64
 	for rows.Next() {
+		i++
 		if err = databind(rows); err != nil {
-			return err
+			return i, err
 		}
 	}
-	return nil
+	return i, nil
 }
 
 // QueryStatement Executes the statement with the provided query parameters and executes the databind function for each record
-func QueryStatement(ctx context.Context, stmt *sql.Stmt, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
+func QueryStatement(ctx context.Context, stmt *sql.Stmt, databind func(rows *sql.Rows) error, queryParams ...interface{}) (int64, error) {
 	rows, err := stmt.QueryContext(ctx, queryParams...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer rows.Close()
 
+	var i int64
 	for rows.Next() {
+		i++
 		if err = databind(rows); err != nil {
-			return err
+			return i, err
 		}
 	}
-	return nil
+	return i, nil
 }
 
 // ExecuteNonQuery Executes a command with the given command arguments
