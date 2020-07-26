@@ -9,6 +9,7 @@ import (
 	_ "github.com/denisenkom/go-mssqldb" //mssql implementation
 )
 
+// InitConnection initializes a connection to an instance of MSSQL
 func InitConnection(constring string, maxOpen int, maxIdle int, maxLifetime time.Duration) (*sql.DB, error) {
 	var err error
 	con, err := sql.Open("mssql", constring)
@@ -28,7 +29,7 @@ func InitConnection(constring string, maxOpen int, maxIdle int, maxLifetime time
 }
 
 // Query Executes the query with the provided query parameters and executes the databind function for each record
-func Query(con *sql.DB, ctx context.Context, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
+func Query(ctx context.Context, con *sql.DB, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
 	rows, err := con.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return err
@@ -60,7 +61,7 @@ func QueryStatement(ctx context.Context, stmt *sql.Stmt, databind func(rows *sql
 }
 
 // ExecuteNonQuery Executes a command with the given command arguments
-func ExecuteNonQuery(con *sql.DB, ctx context.Context, cmd string, cmdArgs ...interface{}) (int64, error) {
+func ExecuteNonQuery(ctx context.Context, con *sql.DB, cmd string, cmdArgs ...interface{}) (int64, error) {
 	result, err := con.ExecContext(ctx, cmd, cmdArgs...)
 	if err != nil {
 		return 0, err
@@ -72,6 +73,7 @@ func ExecuteNonQuery(con *sql.DB, ctx context.Context, cmd string, cmdArgs ...in
 	return total, nil
 }
 
+// ExecuteStatementNonQuery Executes a command statement with the given command arguments
 func ExecuteStatementNonQuery(ctx context.Context, stmt *sql.Stmt, cmdArgs ...interface{}) (int64, error) {
 	result, err := stmt.ExecContext(ctx, cmdArgs...)
 	if err != nil {
@@ -82,6 +84,14 @@ func ExecuteStatementNonQuery(ctx context.Context, stmt *sql.Stmt, cmdArgs ...in
 		return 0, err
 	}
 	return total, nil
+}
+
+// NullTimeToTime Converts sql.NullTime to a *time.Time is a value is present, otherwise nil
+func NullTimeToTime(val sql.NullTime) *time.Time {
+	if !val.Valid {
+		return nil
+	}
+	return &val.Time
 }
 
 // GetGUIDString Returns a string representation of a UNIQUEIDENTIFIER from a mssql column, adjusted for endian differences
