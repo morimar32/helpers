@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/denisenkom/go-mssqldb" //mssql implementation
 )
@@ -13,14 +14,26 @@ type DbHelper struct {
 	ConnectionString string
 }
 
-// Query Executes the query with the provided query parameters and executes the databind function for each record
-func (db *DbHelper) Query(ctx context.Context, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
-	con, err := sql.Open("mssql", db.ConnectionString)
+func InitConnection(constring string, maxOpen int, maxIdle int, maxLifetime time.Duration) (*sql.DB, error) {
+	var err error
+	con, err := sql.Open("mssql", constring)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer con.Close()
 
+	con.SetMaxOpenConns(maxOpen)
+	con.SetMaxIdleConns(maxIdle)
+	con.SetConnMaxLifetime(maxLifetime)
+	err = con.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return con, nil
+}
+
+// Query Executes the query with the provided query parameters and executes the databind function for each record
+func (db *DbHelper) Query(con *sql.DB, ctx context.Context, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
 	rows, err := con.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return err
@@ -35,15 +48,37 @@ func (db *DbHelper) Query(ctx context.Context, query string, databind func(rows 
 	return nil
 }
 
+// QueryStatement Executes the statement with the provided query parameters and executes the databind function for each record
+func (db *DbHelper) QueryStatement(ctx context.Context, stmt *sql.Stmt, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
+	rows, err := stmt.QueryContext(ctx, queryParams...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = databind(rows); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // ExecuteNonQuery Executes a command with the given command arguments
-func (db *DbHelper) ExecuteNonQuery(ctx context.Context, cmd string, cmdArgs ...interface{}) (int64, error) {
-	con, err := sql.Open("mssql", db.ConnectionString)
+func (db *DbHelper) ExecuteNonQuery(con *sql.DB, ctx context.Context, cmd string, cmdArgs ...interface{}) (int64, error) {
+	result, err := con.ExecContext(ctx, cmd, cmdArgs...)
 	if err != nil {
 		return 0, err
 	}
-	defer con.Close()
+	total, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
 
-	result, err := con.ExecContext(ctx, cmd, cmdArgs...)
+func (db *DbHelper) ExecuteStatementNonQuery(ctx context.Context, stmt *sql.Stmt, cmdArgs ...interface{}) (int64, error) {
+	result, err := stmt.ExecContext(ctx, cmdArgs...)
 	if err != nil {
 		return 0, err
 	}

@@ -1,31 +1,44 @@
 package errors
 
 type ValidationError struct {
-	err string
+	Err string
 }
 
 type DataAccessError struct {
-	err string
+	Err string
 }
 
 func (e *ValidationError) Error() string {
-	return e.err
+	return e.Err
 }
 
 func (e *DataAccessError) Error() string {
-	return e.err
+	return e.Err
 }
 
-func NewValidationError(e error) *ValidationError {
+func NewValidationError(err string) *ValidationError {
 	ve := &ValidationError{
-		err: e.Error(),
+		Err: err,
 	}
 	return ve
 }
 
-func NewDataAccessError(e error) *DataAccessError {
+func NewValidationErrorFromError(e error) *ValidationError {
+	ve := &ValidationError{
+		Err: e.Error(),
+	}
+	return ve
+}
+
+func NewDataAccessError(err string) *DataAccessError {
 	dae := &DataAccessError{
-		err: e.Error(),
+		Err: err,
+	}
+	return dae
+}
+func NewDataAccessErrorFromError(e error) *DataAccessError {
+	dae := &DataAccessError{
+		Err: e.Error(),
 	}
 	return dae
 }
