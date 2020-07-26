@@ -9,11 +9,6 @@ import (
 	_ "github.com/denisenkom/go-mssqldb" //mssql implementation
 )
 
-// DbHelper Helper class for working with databases
-type DbHelper struct {
-	ConnectionString string
-}
-
 func InitConnection(constring string, maxOpen int, maxIdle int, maxLifetime time.Duration) (*sql.DB, error) {
 	var err error
 	con, err := sql.Open("mssql", constring)
@@ -33,7 +28,7 @@ func InitConnection(constring string, maxOpen int, maxIdle int, maxLifetime time
 }
 
 // Query Executes the query with the provided query parameters and executes the databind function for each record
-func (db *DbHelper) Query(con *sql.DB, ctx context.Context, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
+func Query(con *sql.DB, ctx context.Context, query string, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
 	rows, err := con.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return err
@@ -49,7 +44,7 @@ func (db *DbHelper) Query(con *sql.DB, ctx context.Context, query string, databi
 }
 
 // QueryStatement Executes the statement with the provided query parameters and executes the databind function for each record
-func (db *DbHelper) QueryStatement(ctx context.Context, stmt *sql.Stmt, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
+func QueryStatement(ctx context.Context, stmt *sql.Stmt, databind func(rows *sql.Rows) error, queryParams ...interface{}) error {
 	rows, err := stmt.QueryContext(ctx, queryParams...)
 	if err != nil {
 		return err
@@ -65,7 +60,7 @@ func (db *DbHelper) QueryStatement(ctx context.Context, stmt *sql.Stmt, databind
 }
 
 // ExecuteNonQuery Executes a command with the given command arguments
-func (db *DbHelper) ExecuteNonQuery(con *sql.DB, ctx context.Context, cmd string, cmdArgs ...interface{}) (int64, error) {
+func ExecuteNonQuery(con *sql.DB, ctx context.Context, cmd string, cmdArgs ...interface{}) (int64, error) {
 	result, err := con.ExecContext(ctx, cmd, cmdArgs...)
 	if err != nil {
 		return 0, err
@@ -77,7 +72,7 @@ func (db *DbHelper) ExecuteNonQuery(con *sql.DB, ctx context.Context, cmd string
 	return total, nil
 }
 
-func (db *DbHelper) ExecuteStatementNonQuery(ctx context.Context, stmt *sql.Stmt, cmdArgs ...interface{}) (int64, error) {
+func ExecuteStatementNonQuery(ctx context.Context, stmt *sql.Stmt, cmdArgs ...interface{}) (int64, error) {
 	result, err := stmt.ExecContext(ctx, cmdArgs...)
 	if err != nil {
 		return 0, err
