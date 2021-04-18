@@ -100,6 +100,9 @@ func NullTimeToTime(val sql.NullTime) *time.Time {
 
 // GetGUIDString Returns a string representation of a UNIQUEIDENTIFIER from a mssql column, adjusted for endian differences
 func GetGUIDString(b []byte) string {
+	if len(b) < 8 {
+		return string(b)
+	}
 	b[0], b[1], b[2], b[3] = b[3], b[2], b[1], b[0]
 	b[4], b[5] = b[5], b[4]
 	b[6], b[7] = b[7], b[6]
