@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/morimar32/helpers/encryption"
 
@@ -15,7 +16,7 @@ func LoadEnvironmentFile() error {
 	if len(env) <= 0 {
 		env = "Dev"
 	}
-	envPath := fmt.Sprintf(".%s.env", env)
+	envPath := strings.ToLower(fmt.Sprintf(".%s.env", env))
 	err := godotenv.Load(envPath)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package logging
 
 import (
 	"io"
+	"strings"
 
 	"github.com/ZachtimusPrime/Go-Splunk-HTTP/splunk"
 	"go.uber.org/zap/zapcore"
@@ -43,4 +44,44 @@ func NewSplunkWriter(collectorEndpoint string, hecToken string, source string, s
 	writer.Client = *splunkClient
 	lockWriter := zapcore.Lock(writer)
 	return lockWriter
+}
+
+func GetLogLevel(level string) zapcore.Level {
+	level = strings.ToLower(level)
+	switch level {
+	case "debug":
+		return zapcore.DebugLevel
+	case "info":
+		return zapcore.InfoLevel
+	case "warn":
+		return zapcore.WarnLevel
+	case "error":
+		return zapcore.ErrorLevel
+	case "dpanic":
+		return zapcore.DPanicLevel
+	case "panic":
+		return zapcore.PanicLevel
+	case "fatal":
+		return zapcore.FatalLevel
+	default:
+		return zapcore.WarnLevel
+	}
+}
+
+func GetDefaultJSONEncoder() zapcore.Encoder {
+	ecfg := zapcore.EncoderConfig{
+		TimeKey:        "timestamp",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		MessageKey:     "message",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.RFC3339TimeEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
+	enc := zapcore.NewJSONEncoder(ecfg)
+	return enc
 }
