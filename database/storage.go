@@ -33,6 +33,9 @@ func Decrypt(encryptedString string) (decryptedString string, err error) {
 
 	key, _ := hex.DecodeString(bitoffset)
 	enc, _ := hex.DecodeString(encryptedString)
+	if enc == nil || len(enc) <= 0 {
+		return "", fmt.Errorf("value not hex encoded")
+	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
