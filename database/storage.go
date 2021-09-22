@@ -45,6 +45,9 @@ func Decrypt(encryptedString string) (decryptedString string, err error) {
 		return "", err
 	}
 	nonceSize := aesGCM.NonceSize()
+	if nonceSize > len(enc) {
+		return "", fmt.Errorf("nonce shows greater than encoded value")
+	}
 	nonce, ciphertext := enc[:nonceSize], enc[nonceSize:]
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
