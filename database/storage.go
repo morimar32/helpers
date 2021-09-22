@@ -23,7 +23,7 @@ func Encrypt(stringToEncrypt string) (encryptedString string, err error) {
 	}
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
+		return "", err
 	}
 	ciphertext := aesGCM.Seal(nonce, nonce, plaintext, nil)
 	return fmt.Sprintf("%x", ciphertext), nil
@@ -45,7 +45,7 @@ func Decrypt(encryptedString string) (decryptedString string, err error) {
 	nonce, ciphertext := enc[:nonceSize], enc[nonceSize:]
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
 	return fmt.Sprintf("%s", plaintext), nil
