@@ -1,5 +1,12 @@
 package errors
 
+import (
+	"errors"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
 type ValidationError struct {
 	Err string
 }
@@ -41,4 +48,17 @@ func NewDataAccessErrorFromError(e error) *DataAccessError {
 		Err: e.Error(),
 	}
 	return dae
+}
+
+func TranslateErrorTogRPCStatusError(err error) error {
+	if err != nil {
+		if errors.Is(err, &DataAccessError{}) {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		if errors.Is(err, &ValidationError{}) {
+			return status.Errorf(codes.InvalidArgument, err.Error())
+		}
+		return status.Errorf(codes.Unknown, err.Error())
+	}
+	return nil
 }
