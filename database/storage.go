@@ -52,6 +52,9 @@ func Decrypt(encryptedString string) (decryptedString string, err error) {
 }
 
 func DecryptString(encVal string, defaultVal string) (val string) {
+	if encVal == "" {
+		return defaultVal
+	}
 	val, err := Decrypt(encVal)
 	if err != nil {
 		return defaultVal
@@ -65,6 +68,9 @@ func EncryptFloat64(val float64) (encryptedString string, err error) {
 }
 
 func DecryptFloat64(encVal string, defaultVal float64) (val float64) {
+	if encVal == "" {
+		return defaultVal
+	}
 	v, err := Decrypt(encVal)
 	if err != nil {
 		return defaultVal
@@ -81,6 +87,9 @@ func EncryptInt64(val int64) (encryptedString string, err error) {
 }
 
 func DecryptInt64(encVal string, defaultVal int64) (val int64) {
+	if encVal == "" {
+		return defaultVal
+	}
 	v, err := Decrypt(encVal)
 	if err != nil {
 		return defaultVal
